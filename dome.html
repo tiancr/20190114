@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>canvas贪吃蛇游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body,
+        #canvas {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        button {
+            position: absolute;
+            border: none;
+            background: #ccc;
+            color: black;
+            font-weight: bold;
+            font-size: 30px;
+            width: 350px;
+            height: 80px;
+            line-height: 80px;
+            text-align: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 1s;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <button>开始游戏</button>
+    <script>
+        let canvas = document.getElementById('canvas')
+        let btn = document.getElementsByTagName('button')[0]
+        
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+        let ctx = canvas.getContext('2d')
+        //蛇头
+        let SnackTop = []
+        //蛇身体
+        let SnackList = []
+        //蛇整体
+        let SnackFonlyList = [...SnackTop, ...SnackList]
+        //食物数组
+        let EatList = []
+        //存放上次状态的数组
+        var list = []
+        //定时器id
+        var timeID = null;
+        let colorList = ["#33B5E5", "#0099CC", "#AA66CC", "#9933CC", "#99CC00", "#669900", "#FFBB33", "#FF8800", "#FF4444", "#CC0000"]
+        let x1 = 60, y1 = 60, x2 = 60, y2 = 60;
+        btn.addEventListener('click', function () {
+            if (btn.innerHTML == '开始游戏') {
+                btn.style.opacity = 0
+                setTimeout(function () {
+                    requestAnimation()
+                    btn.innerHTML = '触碰边界，游戏结束'
+                    timeID = setInterval(requestAnimation, 300)
+                }, 1000)
+            }
+        })
+        function Snack(x1 = 60, y1 = 60, x2 = 60, y2 = 60, color) {
+            this.x1 = x1;
+            this.x2 = x2;
+            this.y1 = y1;
+            this.y2 = y2;
+            this.color = color || colorList[Math.floor(Math.random() * 10)]
+            this.direction = 'x'  //X向右 y向下 -x 向左  -y 上
+            this.paceSoon = 2
+            this.pace = 30
+        }
+        Snack.prototype.RectFun = function () {
+            ctx.beginPath();
+            ctx.fillStyle = this.color
+            ctx.fillRect(this.x1, this.y1, this.x2, this.y2);
+            ctx.stroke();
+        }
+        Snack.prototype.Update = function () {
+            if (this.direction == 'x') {
+                this.x1 += this.paceSoon * this.pace
+            } else if (this.direction == 'y') {
+                this.y1 += this.paceSoon * this.pace
+            } else if (this.direction == '-x') {
+                this.x1 -= this.paceSoon * this.pace
+            } else if (this.direction == '-y') {
+                this.y1 -= this.paceSoon * this.pace
+            }
+        }
+        Snack.prototype.directionFun = function (index) {
+            if (index == 0) {
+                if (SnackTop[0].direction == 'x') {
+                    this.x1 = SnackTop[0].x1 - 60
+                    this.direction = 'x'
+                    this.y1 = SnackTop[0].y1
+                } else if (SnackTop[0].direction == 'y') {
+                    this.direction = 'y'
+                    this.x1 = SnackTop[0].x1
+                    this.y1 = SnackTop[0].y1 - 60
+                } else if (SnackTop[0].direction == '-x') {
+                    this.direction = '-x'
+                    this.x1 = SnackTop[0].x1 + 60
+                    this.y1 = SnackTop[0].y1
+                } else if (SnackTop[0].direction == '-y') {
+                    this.direction = '-y'
+                    this.y1 = SnackTop[0].y1 + 60
+                    this.x1 = SnackTop[0].x1
+                }
+            } else {
+                if (list[index - 1].direction == 'x') {
+                    this.x1 = list[index - 1].x1
+                    this.y1 = list[index - 1].y1
+                } else if (list[index - 1].direction == 'y') {
+                    this.x1 = list[index - 1].x1
+                    this.y1 = list[index - 1].y1
+                } else if (list[index - 1].direction == '-x') {
+                    this.x1 = list[index - 1].x1
+                    this.y1 = list[index - 1].y1
+                } else if (list[index - 1].direction == '-y') {
+                    this.y1 = list[index - 1].y1
+                    this.x1 = list[index - 1].x1
+                }
+            }
+        }
+        //食物
+        function Eat(x1, y1, x2, y2) {
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+            this.color = colorList[Math.floor(Math.random() * 10)]
+        }
+        Eat.prototype.RectFunE = function () {
+            ctx.beginPath();
+            ctx.fillStyle = this.color
+            ctx.fillRect(this.x1, this.y1, this.x2, this.y2);
+            ctx.stroke();
+        }
+        //生成八个
+        function getSanck() {
+            for (let i = 0; i < 8; i++) {
+                x1 += 60;
+                SnackList.length != 7 ? SnackList.push(new Snack(x1, y1, x2, y2)) : SnackTop.push(new Snack(x1, y1, x2, y2))
+            }
+        }
+        getSanck()
+        //生成食物随机数 
+        function MathRandomFun(min, max) {
+            let num = Math.floor((max - min) * Math.random() + min)
+            if (num % 60 == 0) {
+                return num
+            } else {
+                return MathRandomFun(min, max)
+            }
+        }
+        SnackList = SnackList.reverse()
+        // 生成n个正方形  和一个食物
+        function requestAnimation() {
+            list = JSON.parse(JSON.stringify(SnackList))
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            //食物
+            if (EatList.length == 0)
+                EatList.push(new Eat(MathRandomFun(120, window.innerWidth - 120), MathRandomFun(150, window.innerHeight - 90), x2, y2))
+            EatList.map(item => {
+                item.RectFunE()
+            })
+            //判断舌头和食物的位置信息
+            //SnackTop  舌头
+            //EatList   食物
+            if (SnackTop[0].x1 == EatList[0].x1 && SnackTop[0].y1 == EatList[0].y1) {
+                //添加蛇身体
+                SnackList.push(new Snack(list[list.length - 1].x1, list[list.length - 1].y1, x2, y2, EatList[0].color))
+                EatList.length = 0
+            }
+            SnackTop.map(item => {
+                item.RectFun()
+                item.Update()
+            })
+            SnackList.map((item, index) => {
+                item.RectFun()
+                item.directionFun(index)
+            })
+            if (SnackTop[0].x1 <= -60 || SnackTop[0].x1 > window.innerWidth || SnackTop[0].y1 <= 0 || SnackTop[0].y1 > window.innerHeight) {
+                clearInterval(timeID)
+                // alert('游戏结束')
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                console.log("=========")
+                btn.style.opacity = 1
+            }
+        }
+
+        //添加键盘按下时间 并且不能直接掉头
+        window.addEventListener('keydown', function (e) {
+            if (e.keyCode == '39') {
+                SnackTop[0].direction == '-x' ? '' : SnackTop[0].direction = 'x'
+                // console.log('右')
+            } else if (e.keyCode == '40') {//下 40
+                SnackTop[0].direction == '-y' ? '' : SnackTop[0].direction = 'y'
+                // console.log('下')
+            } else if (e.keyCode == '37') {//左 37
+                SnackTop[0].direction == 'x' ? '' : SnackTop[0].direction = '-x'
+                // console.log('-x')
+            } else if (e.keyCode == '38') {//右 39
+                SnackTop[0].direction == 'y' ? '' : SnackTop[0].direction = '-y'
+                // console.log('-y')
+            }
+        })
+
+
+    </script>
+</body>
+
+</html>

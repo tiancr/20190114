@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @keyframes rotate1 {
+            from {
+                transform:translate(-50%,-50%)  rotate(0deg);
+
+            }
+
+            to {
+                transform: translate(-50%,-50%) rotate(360deg);
+            }
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            background-color: rgb(238, 230, 230);
+        }
+
+        canvas {
+            /* border: 1px solid black; */
+            margin-top: 30px;
+        }
+
+        .select {
+            background-color: white;
+            position: absolute;
+            top: 0%;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+            padding: 10px 20px;
+            border: 1px solid rgba(0, 0, 0, 0.5);
+            border-radius: 2px;
+            transition: all .3s;
+            box-shadow: 0px 0px 10px 2px rgba(250, 250, 250, 0.09);
+        }
+
+        .select:hover {
+            border-color: rgba(0, 0, 0, 0.2);
+            box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.09);
+        }
+
+        .select:active {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        input {
+            opacity: 0;
+            position: absolute;
+        }
+
+        #album {
+            position: absolute;
+            margin-top: 15px;
+            top: 50%;
+            left: 50%;
+            height: 240px;
+            width: 240px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            box-shadow: 0 0px 30px 10px rgba(0, 0, 0, 0.09);
+            font-size: 40px;
+            animation-timing-function: linear;
+            transform-origin: 50% 50%;
+        }
+
+        .album-active {
+
+            animation: rotate1 3s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="select">
+        选择音频文件
+        <input type="file" id="musicfile" class="upload" accept=".mp3,.mp4">
+    </div>
+
+    <canvas class="canvas" id="canvas" width="600" height="600"></canvas>
+    <div id="album">Music</div>
+</body>
+<script>
+    const audioContext = new AudioContext();
+    const musicfile = document.getElementById('musicfile');
+    const album = document.getElementById('album');
+    const canvas = document.getElementById('canvas')
+    const selectdiv = document.getElementsByClassName('select')[0];
+    selectdiv.addEventListener('click', function () {
+        // var mouseEvent = document.createEvent("MouseEvents");
+        // mouseEvent.initEvent("click", true, true);
+        // musicfile.dispatchEvent(mouseEvent);
+        musicfile.click()
+    })
+    musicfile.addEventListener('change', function () {
+        var file = this.files[0];
+        console.log(file)
+        var fileReader = new FileReader();
+        fileReader.readAsArrayBuffer(file)
+        var count = 0;
+        fileReader.onload = function (event) {
+            album.classList.add('album-active')
+            console.log(event.target.result)
+            var filebuffer = event.target.result;
+            audioContext.decodeAudioData(filebuffer).then((filestream) => {
+                console.log(filestream)
+                /* 
+                    我们需要将音频文件解码成二进制流文件，这个流文件即为音频资源buffer播放源
+                    之后需要将buffer播放源与分析器相连，分析器与扬声器相连，（扬声器为 audioContext.destination）
+                    audioContext.destination:
+                    返回AudioDestinationNode对象，表示当前audio context中所有节点的最终节点，一般表示音频渲染设备。
+                */
+                var audioBufferSourceNode = audioContext.createBufferSource();
+                var analyser = audioContext.createAnalyser();
+                analyser.fftSize = 512;
+                audioBufferSourceNode.connect(analyser);
+                analyser.connect(audioContext.destination);
+                audioBufferSourceNode.buffer = filestream;
+                audioBufferSourceNode.start();
+                //frequencyBinCount 的值固定为 AnalyserNode 接口中fftSize值的一半. 该属性通常用于可视化的数据值的数量.
+                // var bufferLength = analyser.fftSize;
+                var bufferLength = analyser.frequencyBinCount;
+                var dataArray = new Uint8Array(bufferLength);
+                console.log(dataArray)
+                var ctx = canvas.getContext('2d')
+
+
+                // 柱状频谱图
+
+                var cwidth = canvas.width;
+                var cheight = canvas.height;
+                var rectWidth = 8;
+                var gap = 2;
+                var minheight = 2;
+                var rectCount = cwidth / (rectWidth + gap);
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                var render = function () {
+                    analyser.getByteFrequencyData(dataArray);
+                    var step = Math.round(dataArray.length / rectCount);
+                    ctx.clearRect(0, 0, cwidth, cheight);
+                    for (let i = 0; i < rectCount; i++) {
+                        let value = dataArray[i*step];
+                        // ctx.fillRect(x,y,width,height);
+                        ctx.fillRect(i * (rectWidth + gap), cheight - value, rectWidth, value);
+                    }
+                    requestAnimationFrame(render);
+                }
+                render()
+
+                // 环状频谱图
+                // const PI = 3.14;
+                // var cwidth = canvas.width;
+                // var cheight = canvas.height;
+                // var rectWidth = 5;
+                // var cR = 230; //半径
+                // var rectCount = 180;
+
+                // ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                // var render = function () {
+                //     analyser.getByteFrequencyData(dataArray);
+                //     var step = Math.round(dataArray.length / rectCount);
+                //     ctx.clearRect(0, 0, cwidth, cheight);
+                //     ctx.save();
+                //     // ctx.translate(cwidth/2,cheight/2);
+                //     ctx.translate(cwidth / 2, cheight / 2);
+                //     for (let i = 0; i < rectCount; i++) {
+                //         if (i < 50) {
+                //             var value = dataArray[(rectCount - i - 20) * step];
+                //         } else {
+                //             var value = dataArray[i * step];
+                //         }
+                //         // console.log(i, value)
+                //         var rectHeight = ((cheight / 2 - cR) * value / 256) || 2
+                //         // ctx.fillRect(x,y,width,height);
+                //         ctx.rotate(2 * PI / rectCount);
+                //         ctx.fillRect(-rectWidth / 2, -cR - rectHeight, rectWidth, rectHeight);
+                //     }
+                //     ctx.restore();
+                //     requestAnimationFrame(render);
+                // }
+                // render()
+            })
+        };
+    })
+</script>
+
+</html>

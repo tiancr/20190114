@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .box {
+            position: relative;
+            margin: 50px auto;
+            background-color: #ccc;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            /* transition: all 1s; */
+            animation: zjq 2s infinite;
+            animation-direction: alternate-reverse
+        }
+
+        @keyframes zjq {
+            0% {
+                top: 0;
+                opacity: 1;
+                background-color: bisque;
+            }
+
+            100% {
+                top: 100px;
+                opacity: .5;
+                background-color: #234623;
+            }
+        }
+
+        .bigBox {
+            width: 1000px;
+            position: relative;
+            margin: 100px auto;
+            background-color: #bbb;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .bigBox .a,
+        .bigBox .b,
+        .bigBox .c {
+            width: 600px;
+            height: 100%;
+            position: absolute;
+            transition: left 1s;
+        }
+
+        .bigBox .a {
+
+            background-color: red;
+        }
+
+        .bigBox .b {
+            left: 200px;
+            background-color: blue;
+        }
+
+        .bigBox .c {
+            left: 400px;
+            background-color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bigBox">
+        <div class="a">
+            <div class="Child1"></div>
+            <div class="Child2"></div>
+        </div>
+        <div class="b">
+            <div class="Child1"></div>
+            <div class="Child2"></div>
+        </div>
+        <div class="c">
+            <div class="Child1"></div>
+            <div class="Child2"></div>
+        </div>
+    </div>
+    <div class="box"></div>
+    <script>
+        let bigBox = document.getElementsByClassName('bigBox')[0]
+        bigBox.addEventListener('click', function (e) {
+            let { className } = e.target
+            switch (className) {
+                case 'a': bigBox.children[0].style.left = '0'; bigBox.children[1].style.left = '600px'; bigBox.children[2].style.left = '800px'; break;
+                case 'b': bigBox.children[0].style.left = '0'; bigBox.children[1].style.left = '200px'; bigBox.children[2].style.left = '800px'; break;
+                case 'c':bigBox.children[0].style.left = '0'; bigBox.children[1].style.left = '200px'; bigBox.children[2].style.left = '400px'; break;
+                default: break
+            }
+            return
+        })
+    </script>
+</body>
+
+</html>

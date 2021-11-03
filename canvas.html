@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>canvas</title>
+    <style>
+
+    </style>
+</head>
+<body>
+    <div style="margin:0 auto">
+        <canvas id="canvas1" width="400px" height="600px" style="background-color: bisque;"></canvas>
+    </div>
+</body>
+<script>
+    var canvas1 = document.getElementById("canvas1");
+    var ctx = canvas1.getContext("2d");
+    console.log(ctx)
+    for (var i = 0;i < 6;i++){
+   for (var j = 0;j < 6;j++){
+       ctx.fillStyle = 'rgba('+ Math.floor(255-42.5 * i) +','+ Math.floor(255-42.5 * j) +', 0)';
+       ctx.fillRect(i * 25, j * 25, 25, 25);
+   }
+}
+    // ctx.fillStyle = "green"; //准备填充的颜色
+    // ctx.beginPath(10,10);     //声明要开始绘制路径
+    // ctx.moveTo(50,125); //移动到绘制点，将“画笔”移动到100,100的位置
+    // ctx.lineTo(100,100); //划线
+    // ctx.lineTo(150,100); //划线
+    // ctx.lineTo(200,125); //划线
+    // ctx.lineTo(150,150); //划线
+    // ctx.lineTo(100,150); //划线
+    
+    
+    // // ctx.lineWidth = 10;  //线的粗细
+    // ctx.strokeStyle = "red"; //线的颜色
+    // // ctx.fillStyle = "green"; //准备填充的颜色
+    // ctx.closePath();     //闭合路径（自动补全）
+    // ctx.stroke();        //显示线（绘制线），可以绘制的路径显示出来
+    // ctx.fill();          //填充颜色
+
+</script>
+</html>

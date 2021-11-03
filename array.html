@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试数组、字符串</title>
+</head>
+<body>
+    <script>
+    let kindStr = "1,2,3"
+    let kindStrArry = [];
+    let newKindstr = kindStr.split(",");
+    newKindstr.map((i)=>{
+        var kindName;
+        if(i=="1"){
+            kindName = "牛";
+            // return
+        }else if(i=="2"){
+            kindName = "羊";
+            // kindStrArry.push(kindName)
+            // return
+        }else if(i == "3"){
+            kindName = "猪";
+            // kindStrArry.push(kindName)
+            // return
+        }
+        kindStrArry.push(kindName)
+        return
+    })
+   let kindStr1 = kindStrArry.join(',')
+       kindStr = kindStr1.replace(/,/g," ")
+    console.log(kindStr)
+    </script>
+</body>
+</html>
